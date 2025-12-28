@@ -2,16 +2,14 @@ import { useState, useEffect } from 'react';
 import { X, Clock, MapPin, Video, Bell, Check, Ban, Calendar, Repeat, AlertCircle, Info } from 'lucide-react';
 
 export function LessonForm({ students, onClose, onSave, initialData, existingEvents = [] }) {
-  // Basic State
   const [eventType, setEventType] = useState((initialData?.type === 'block') ? 'block' : 'lesson');
   const [error, setError] = useState(null);
 
-  // Lesson State
   const [studentIds, setStudentIds] = useState(['']); 
   const [studentCount, setStudentCount] = useState(1);
   
   const [totalPrice, setTotalPrice] = useState(0);
-  const [originalPrice, setOriginalPrice] = useState(0); // Store original price before offset
+  const [originalPrice, setOriginalPrice] = useState(0); 
   
   const [isFrontal, setIsFrontal] = useState(true);
   const [location, setLocation] = useState('');
@@ -19,13 +17,11 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
   const [hasReminder, setHasReminder] = useState(false);
   const [selectedReminders, setSelectedReminders] = useState([1440]); 
 
-  // Block State
   const [blockType, setBlockType] = useState(initialData?.isRecurring ? 'recurring' : 'one-time');
   const [blockTitle, setBlockTitle] = useState(initialData?.title || 'חסימת לו"ז');
   const [recurringDay, setRecurringDay] = useState(initialData?.dayOfWeek ?? new Date().getDay());
   const [recurringEndDate, setRecurringEndDate] = useState(initialData?.recurringEndDate ? new Date(initialData.recurringEndDate).toISOString().split('T')[0] : '');
 
-  // Shared State (Time)
   const [date, setDate] = useState(initialData?.start ? new Date(initialData.start).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState(initialData?.start ? new Date(initialData.start).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : '10:00');
   const [endTime, setEndTime] = useState(initialData?.end ? new Date(initialData.end).toLocaleTimeString('he-IL', {hour: '2-digit', minute:'2-digit'}) : '11:00');
@@ -39,12 +35,10 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
     { label: 'שבוע', value: 10080 }
   ];
 
-  // If switching to online, library-room option is irrelevant
   useEffect(() => {
     if (!isFrontal) setNeedsLibrary(false);
   }, [isFrontal]);
 
-  // Load data for editing
   useEffect(() => {
     if (initialData) {
         if (initialData.type === 'block') {
@@ -69,7 +63,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
     }
   }, [initialData]);
 
-  // Lesson Helpers
   const handleCountChange = (val) => {
     const count = Math.max(1, Number(val));
     setStudentCount(count);
@@ -93,7 +86,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
     );
   };
 
-  // Smart Price Calculation (including balance)
   useEffect(() => {
     if (eventType === 'block') return;
 
@@ -108,7 +100,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
     
     let pricePerStudent = 0;
 
-    // Basic price logic
     if (['elementary', 'יסודי'].some(t => level.includes(t))) {
       pricePerStudent = count === 1 ? 120 : 0; 
     } 
@@ -126,7 +117,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
       }
     }
 
-    // Calculate clean lesson price
     let calculatedBasePrice = 0;
     if (['student', 'academic', 'סטודנט'].some(t => level.includes(t)) && count === 1) {
         calculatedBasePrice = pricePerStudent;
@@ -136,13 +126,11 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
 
     setOriginalPrice(calculatedBasePrice);
 
-    // Apply balance offset for new lessons
     if (!initialData && calculatedBasePrice > 0) {
         const studentBalance = firstStudent.balance || 0;
         const adjustedPrice = calculatedBasePrice - studentBalance;
         setTotalPrice(adjustedPrice);
     } else if (initialData) {
-        // On edit, keep existing price unless manually changed
         if (calculatedBasePrice !== initialData.price) {
              setTotalPrice(calculatedBasePrice); 
         }
@@ -152,7 +140,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
 
   }, [studentIds, studentCount, hours, students, eventType]); 
 
-  // Conflict Check
   const checkConflicts = (newStart, newEnd) => {
     const newStartMinutes = newStart.getHours() * 60 + newStart.getMinutes();
     const newEndMinutes = newEnd.getHours() * 60 + newEnd.getMinutes();
@@ -185,7 +172,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
     return null;
   };
 
-  // Submit
   const handleSubmit = () => {
     setError(null);
     const startDateTime = new Date(`${date}T${time}`);
@@ -273,7 +259,9 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
                     location: isFrontal ? location : 'Zoom/Online',
                     needsLibrary: Boolean(needsLibrary),
                     hasReminder,
-                    reminders: hasReminder ? selectedReminders : []
+                    reminders: hasReminder ? selectedReminders : [],
+                    isCharged: false,
+                    reminderSent: false
                 };
             });
             onSave(lessonsToSave);
@@ -406,7 +394,6 @@ export function LessonForm({ students, onClose, onSave, initialData, existingEve
                      <span className="absolute left-4 top-3.5 text-indigo-400 font-bold">₪</span>
                    </div>
                    
-                   {/* Visual cue if price differs due to balance */}
                    {(!initialData && totalPrice !== originalPrice && originalPrice > 0) && (
                      <div className="flex items-center gap-2 mt-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg border border-amber-100 dark:border-amber-800/50 animate-pulse">
                         <Info size={14} className="shrink-0" />

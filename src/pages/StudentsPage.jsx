@@ -9,6 +9,7 @@ import {
   listenToStudents, listenToSchedule, listenToGradings,
   saveStudent, saveBulkLessons, updateLesson,
   savePayment, saveGrading, deleteGrading, deleteStudent,
+  deleteLesson,
   getMonthlyStats
 } from '../lib/storage';
 
@@ -20,6 +21,7 @@ import { GradingForm } from '../components/GradingForm';
 import { GradingsList } from '../components/GradingsList';
 import { StudentDetails } from '../components/StudentDetails';
 import { CalendarView } from '../components/CalendarView';
+import { LessonDetails } from '../components/LessonDetails'; // NEW IMPORT
 import StatsPage from './StatsPage';
 import { LEVELS, LEVEL_LABELS } from '../lib/pricing';
 import { PricingManager } from '../components/PricingManager';
@@ -37,6 +39,7 @@ export default function StudentsPage() {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [isReportingLesson, setIsReportingLesson] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null); 
+  const [viewLesson, setViewLesson] = useState(null); // NEW STATE
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
   const [editingGrading, setEditingGrading] = useState(null);
@@ -120,6 +123,16 @@ export default function StudentsPage() {
     setIsReportingLesson(true);
   };
 
+  // New Handler for viewing details
+  const handleViewLesson = (lesson) => {
+    setViewLesson(lesson);
+  };
+
+  const handleDeleteLesson = async (id) => {
+    await deleteLesson(id);
+    setViewLesson(null);
+  };
+
   const handleOpenBlock = () => {
     setEditingLesson({ type: 'block' }); 
     setIsReportingLesson(true);
@@ -156,11 +169,34 @@ export default function StudentsPage() {
     const now = new Date();
     return schedule
       .filter(item => {
-         const d = new Date(item.start);
-         return d >= now && item.type !== 'block';
+         if (item.type === 'block') return false;
+         const start = new Date(item.start);
+         const end = new Date(item.end || start.getTime() + (item.hours || 1) * 60 * 60 * 1000);
+         return end > now;
       })
       .sort((a, b) => new Date(a.start) - new Date(b.start))
       .slice(0, 5);
+  };
+
+  const getTimeStatus = (lesson) => {
+    const now = new Date();
+    const start = new Date(lesson.start);
+    const end = new Date(lesson.end || start.getTime() + (lesson.hours || 1) * 60 * 60 * 1000);
+    
+    if (now >= start && now < end) {
+        return { text: "מתקיים כרגע 🔥", color: "text-rose-600 dark:text-rose-400 animate-pulse font-black" };
+    }
+
+    const diffMs = start - now;
+    const diffMinutes = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays >= 1) return { text: `בעוד ${diffDays} ימים`, color: "text-indigo-600 dark:text-indigo-400" };
+    if (diffHours >= 1) return { text: `בעוד ${diffHours} שעות`, color: "text-amber-600 dark:text-amber-400" };
+    if (diffMinutes > 0) return { text: `בעוד ${diffMinutes} דקות`, color: "text-emerald-600 dark:text-emerald-400" };
+    
+    return { text: "בקרוב", color: "text-slate-500" };
   };
 
   const formatLessonDate = (d) => new Date(d).toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric' });
@@ -228,32 +264,37 @@ export default function StudentsPage() {
                 {getUpcomingLessons().length === 0 ? 
                   <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-dashed border-slate-200 dark:border-slate-700 text-center text-slate-400 text-sm">אין שיעורים קרובים!</div> 
                   : 
-                  getUpcomingLessons().map(lesson => (
-                    <div 
-                        key={lesson.id} 
-                        onClick={() => handleEditLesson(lesson)} 
-                        className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex justify-between items-center cursor-pointer active:scale-[0.98] transition-all hover:border-indigo-200 dark:hover:border-indigo-800 group"
-                    >
-                      <div className="flex items-center gap-3">
-                         <div className={`p-2.5 rounded-xl ${lesson.type === 'frontal' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500'}`}>
-                           {lesson.type === 'frontal' ? <MapPin size={18} /> : <Video size={18} />}
-                         </div>
-                         <div>
-                           <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{lesson.title || lesson.studentName}</p>
-                           <p className="text-xs text-slate-500 dark:text-slate-400 flex gap-2 mt-0.5">
-                             <span className="font-medium">{formatLessonDate(lesson.start)}</span>
-                             <span className="opacity-50">|</span>
-                             <span>{formatLessonTime(lesson.start)}</span>
-                           </p>
-                         </div>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${lesson.type === 'frontal' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' : 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'}`}>
-                          {lesson.type === 'frontal' ? 'פרונטלי' : 'אונליין'}
-                        </span>
-                      </div>
-                    </div>
-                  ))
+                  getUpcomingLessons().map(lesson => {
+                    const status = getTimeStatus(lesson);
+                    return (
+                        <div 
+                            key={lesson.id} 
+                            onClick={() => handleViewLesson(lesson)} 
+                            className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm flex justify-between items-center cursor-pointer active:scale-[0.98] transition-all hover:border-indigo-200 dark:hover:border-indigo-800 group"
+                        >
+                        <div className="flex items-center gap-3">
+                            <div className={`p-2.5 rounded-xl ${lesson.type === 'frontal' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-500' : 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-500'}`}>
+                            {lesson.type === 'frontal' ? <MapPin size={18} /> : <Video size={18} />}
+                            </div>
+                            <div>
+                            <p className="font-bold text-slate-800 dark:text-slate-100 text-sm">{lesson.title || lesson.studentName}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 flex flex-col mt-1">
+                                <span className={`font-bold ${status.color}`}>{status.text}</span>
+                                <span className="flex items-center gap-1 mt-0.5 opacity-80">
+                                    <CalendarIcon size={10} />
+                                    {formatLessonDate(lesson.start)} | {formatLessonTime(lesson.start)}
+                                </span>
+                            </p>
+                            </div>
+                        </div>
+                        <div className="text-right">
+                            <span className={`text-[10px] font-bold px-2 py-1 rounded-full ${lesson.type === 'frontal' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' : 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'}`}>
+                            {lesson.type === 'frontal' ? 'פרונטלי' : 'אונליין'}
+                            </span>
+                        </div>
+                        </div>
+                    );
+                  })
                 }
               </div>
            </div>
@@ -278,7 +319,7 @@ export default function StudentsPage() {
                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-indigo-100 dark:border-indigo-900 mb-4 animate-in fade-in">
                  <Input label="שם מלא" value={newName} onChange={e => setNewName(e.target.value)} autoFocus />
                  <div className="mt-3">
-                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300 block mb-1">רמה</label>
+                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1 block">רמה</label>
                    <select value={newLevel} onChange={e => setNewLevel(e.target.value)} className="w-full p-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-indigo-500 text-slate-900 dark:text-white transition-all">
                      {Object.entries(LEVEL_LABELS).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
                    </select>
@@ -323,7 +364,7 @@ export default function StudentsPage() {
             <CalendarView 
                 schedule={schedule} 
                 onUpdate={() => {}} 
-                onEdit={handleEditFromHistoryOrCalendar} 
+                onEdit={handleViewLesson} // Now opens details first
                 onAddBlock={handleOpenBlock}
             />
         </div>
@@ -347,6 +388,16 @@ export default function StudentsPage() {
         />
       )}
       
+      {/* Lesson Details Modal */}
+      {viewLesson && (
+        <LessonDetails 
+          lesson={viewLesson} 
+          onClose={() => setViewLesson(null)} 
+          onEdit={() => { setViewLesson(null); handleEditLesson(viewLesson); }} 
+          onDelete={handleDeleteLesson} 
+        />
+      )}
+
       {isReportingLesson && (
         <LessonForm 
             students={students} 
