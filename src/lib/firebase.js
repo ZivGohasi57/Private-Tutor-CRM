@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
-// Replace with your actual Firebase config details
+
 const firebaseConfig = {
   apiKey: "AIzaSyDFk6Buvs_z2KRzzrZFlF8C1wY4hYV0LoI",
   authDomain: "ziv-clinic.firebaseapp.com",

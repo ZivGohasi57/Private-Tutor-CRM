@@ -11,7 +11,6 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
   const END_HOUR = 23;
   const HOUR_HEIGHT = 60; 
 
-  // Auto-scroll to 08:00 on mount
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = (8 - START_HOUR) * HOUR_HEIGHT;
@@ -34,12 +33,12 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
     if (!schedule) return [];
     
     return schedule.filter(item => {
-      // Handle one-time events
+      
       if (!item.isRecurring) {
         const itemDate = new Date(item.start);
         return itemDate.toDateString() === dateObj.toDateString();
       }
-      // Handle recurring events
+      
       if (item.isRecurring) {
         if (item.dayOfWeek !== dateObj.getDay()) return false;
         if (item.recurringEndDate) {
@@ -58,7 +57,7 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col h-[600px]" dir="rtl">
       
-      {/* Navigation Header */}
+      {}
       <div className="flex justify-between items-center p-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <button onClick={() => moveView(-1)} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300"><ChevronRight size={20} /></button>
@@ -79,7 +78,7 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
         </div>
       </div>
 
-      {/* Days Header */}
+      {}
       <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 pr-[50px]">
         {visibleDays.map((day, i) => (
           <div key={i} className={`flex-1 py-3 text-center border-l border-slate-100 dark:border-slate-800 min-w-[80px] ${isToday(day) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}>
@@ -89,10 +88,10 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
         ))}
       </div>
 
-      {/* Calendar Body */}
+      {}
       <div className="flex-1 overflow-y-auto relative bg-white dark:bg-slate-900 custom-scrollbar" ref={scrollContainerRef}>
         <div className="flex min-h-full">
-          {/* Time Column */}
+          {}
           <div className="w-[50px] bg-white dark:bg-slate-900 border-l border-slate-100 dark:border-slate-800 flex-shrink-0 z-20 sticky left-0">
             {Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => (
               <div key={i} className="text-[10px] text-slate-400 dark:text-slate-500 text-center relative font-medium" style={{ height: `${HOUR_HEIGHT}px` }}>
@@ -101,16 +100,16 @@ export function CalendarView({ schedule, onUpdate, onEdit, onAddBlock }) {
             ))}
           </div>
 
-          {/* Grid */}
+          {}
           <div className="flex flex-1 relative">
-            {/* Horizontal Lines */}
+            {}
             <div className="absolute inset-0 z-0">
                {Array.from({ length: END_HOUR - START_HOUR + 1 }).map((_, i) => (
                  <div key={i} className="border-b border-slate-50 dark:border-slate-800/60 w-full" style={{ height: `${HOUR_HEIGHT}px` }}></div>
                ))}
             </div>
 
-            {/* Columns & Events */}
+            {}
             {visibleDays.map((day, dayIndex) => (
               <div key={dayIndex} className={`flex-1 border-l border-slate-100 dark:border-slate-800 relative min-w-[80px] z-10 ${isToday(day) ? 'bg-indigo-50/20 dark:bg-indigo-900/5' : ''}`}>
                 {getLessonsForDay(day).map(lesson => {

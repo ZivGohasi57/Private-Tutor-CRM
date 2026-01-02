@@ -8,7 +8,7 @@ export function Reminders({ reminders, onSave, onDelete }) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [time, setTime] = useState('09:00');
   
-  // Alert triggers (minutes before event)
+  
   const [alerts, setAlerts] = useState([15]); 
   
   const addAlert = () => setAlerts([...alerts, 30]);
@@ -30,10 +30,10 @@ export function Reminders({ reminders, onSave, onDelete }) {
     setAlerts([15]);
   };
 
-  // Generate and download ICS calendar file
+  
   const addToCalendar = (reminder) => {
     const startDate = new Date(reminder.date);
-    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // Default duration 1 hour
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); 
     
     const format = (d) => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
     
@@ -73,7 +73,7 @@ END:VCALENDAR`;
   return (
     <div className="animate-in fade-in space-y-6">
       
-      {/* Add New Reminder Form */}
+      {}
       <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-orange-100 dark:border-orange-900/50">
         <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
           <Bell size={18} className="text-orange-500"/> תזכורת חדשה לעצמי
@@ -86,7 +86,7 @@ END:VCALENDAR`;
            <div className="flex-1"><Input type="time" value={time} onChange={(e)=>setTime(e.target.value)} /></div>
         </div>
 
-        {/* Alert Selection */}
+        {}
         <div className="mt-4 bg-orange-50 dark:bg-orange-900/20 p-3 rounded-xl border border-orange-100 dark:border-orange-900/30">
            <p className="text-xs font-bold text-slate-600 dark:text-slate-300 mb-2">מתי לצפצף?</p>
            {alerts.map((min, idx) => (
@@ -117,7 +117,7 @@ END:VCALENDAR`;
         </Button>
       </div>
 
-      {/* Reminders List */}
+      {}
       <div className="space-y-3">
          {reminders.length === 0 && <p className="text-center text-slate-400 text-sm mt-8">אין תזכורות כרגע</p>}
          

@@ -8,7 +8,7 @@ export function PaymentForm({ students, onClose, onSave }) {
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('bit'); 
 
-  // Auto-fill amount if student has negative balance (debt)
+  
   const handleStudentChange = (id) => {
     setSelectedStudentId(id);
     const student = students.find(s => s.id === id);

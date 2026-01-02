@@ -40,7 +40,7 @@ export const calculatePrice = (level, studentsCount, durationHours) => {
     case LEVELS.HIGH: basePrice = studentsCount === 1 ? 160 : (studentsCount === 2 ? 140 : 120); break;
   }
   
-  // Calculate total for non-academic groups or private lessons
+  
   const finalHourlyRate = (studentsCount > 1) ? (basePrice * studentsCount) : basePrice;
   return finalHourlyRate * durationHours;
 };

@@ -65,7 +65,6 @@ function App() {
     };
 
     processStartedLessons();
-    // עדכון כל 10 שניות במקום כל דקה
     const interval = setInterval(processStartedLessons, 10000); 
     return () => clearInterval(interval);
 

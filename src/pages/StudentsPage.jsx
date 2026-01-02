@@ -21,7 +21,7 @@ import { GradingForm } from '../components/GradingForm';
 import { GradingsList } from '../components/GradingsList';
 import { StudentDetails } from '../components/StudentDetails';
 import { CalendarView } from '../components/CalendarView';
-import { LessonDetails } from '../components/LessonDetails'; // NEW IMPORT
+import { LessonDetails } from '../components/LessonDetails'; 
 import StatsPage from './StatsPage';
 import { LEVELS, LEVEL_LABELS } from '../lib/pricing';
 import { PricingManager } from '../components/PricingManager';
@@ -39,7 +39,7 @@ export default function StudentsPage() {
   const [isAddingStudent, setIsAddingStudent] = useState(false);
   const [isReportingLesson, setIsReportingLesson] = useState(false);
   const [editingLesson, setEditingLesson] = useState(null); 
-  const [viewLesson, setViewLesson] = useState(null); // NEW STATE
+  const [viewLesson, setViewLesson] = useState(null); 
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [isGradingModalOpen, setIsGradingModalOpen] = useState(false);
   const [editingGrading, setEditingGrading] = useState(null);
@@ -123,7 +123,7 @@ export default function StudentsPage() {
     setIsReportingLesson(true);
   };
 
-  // New Handler for viewing details
+  
   const handleViewLesson = (lesson) => {
     setViewLesson(lesson);
   };
@@ -364,7 +364,7 @@ export default function StudentsPage() {
             <CalendarView 
                 schedule={schedule} 
                 onUpdate={() => {}} 
-                onEdit={handleViewLesson} // Now opens details first
+                onEdit={handleViewLesson} 
                 onAddBlock={handleOpenBlock}
             />
         </div>
@@ -388,7 +388,7 @@ export default function StudentsPage() {
         />
       )}
       
-      {/* Lesson Details Modal */}
+      {}
       {viewLesson && (
         <LessonDetails 
           lesson={viewLesson} 

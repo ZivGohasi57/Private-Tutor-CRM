@@ -9,7 +9,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
   const [courses, setCourses] = useState([]);
   const [selectedCourseId, setSelectedCourseId] = useState('');
   
-  // Fixed type: always 'task'
+  
   const entryType = 'task';
 
   const [taskName, setTaskName] = useState(initialData?.taskName || '');
@@ -49,7 +49,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
 
     if (!finalCourseName && !selectedCourseId) return;
     
-    // Calculate date based on month selection
+    
     let dateToSave = new Date();
     if (targetMonth === 'next') {
       dateToSave = new Date(dateToSave.getFullYear(), dateToSave.getMonth() + 1, 1);
@@ -90,7 +90,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
 
           <div className="space-y-4">
             
-            {/* Target Month Toggle */}
+            {}
             <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-xl flex items-center justify-between border border-blue-100 dark:border-blue-900/50">
               <span className="text-xs font-bold text-blue-800 dark:text-blue-300 mr-2 flex items-center gap-1">
                 <CalendarClock size={14}/> חודש לחיוב?
@@ -101,7 +101,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
               </div>
             </div>
 
-            {/* Course Selection */}
+            {}
             <div>
               <div className="flex justify-between items-center mb-1.5">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">קורס / מקור הכנסה</label>
@@ -115,7 +115,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
               )}
             </div>
 
-            {/* Task Details */}
+            {}
             <div className="animate-in slide-in-from-top-1 space-y-4">
                 <Input label="שם המטלה" placeholder='למשל: "מטלה 3"' value={taskName} onChange={(e) => setTaskName(e.target.value)} />
                 <div className="flex gap-4">
@@ -124,7 +124,7 @@ export function GradingForm({ onClose, onSave, initialData }) {
                 </div>
             </div>
 
-            {/* Total Summary */}
+            {}
             <div className="p-3 rounded-xl border flex justify-between items-center mt-2 bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-900/50">
                <span className="text-sm font-bold text-purple-900 dark:text-purple-300">סה"כ לתשלום:</span>
                <span className="text-2xl font-black text-purple-600 dark:text-purple-400">

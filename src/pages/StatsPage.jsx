@@ -3,7 +3,15 @@ import { ChevronRight, ChevronLeft, Wallet, BookOpen, GraduationCap, Banknote, C
 import { getMonthlyReport, getStudents } from '../lib/storage';
 
 export default function StatsPage() {
-  const [date, setDate] = useState(new Date());
+  
+  const [date, setDate] = useState(() => {
+    const d = new Date();
+    if (d.getDate() < 10) {
+        d.setMonth(d.getMonth() - 1);
+    }
+    return d;
+  });
+
   const [data, setData] = useState({ lessons: [], gradings: [], payments: [] });
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,24 +42,24 @@ export default function StatsPage() {
     setDate(newDate);
   };
 
-  // Helper to fix "Invalid Date" issue from Firebase Timestamps
+  
   const getDateObj = (d) => {
     if (!d) return new Date();
     return d.toDate ? d.toDate() : new Date(d);
   };
 
-  // --- Calculations ---
+  
   const paymentsFromLessons = data.payments.reduce((sum, p) => sum + p.amount, 0);
   const salaryTotal = data.gradings.reduce((sum, g) => sum + g.totalPrice, 0);
   const grandTotalIncome = paymentsFromLessons + salaryTotal;
-  
+
   const paymentMethods = data.payments.reduce((acc, p) => {
     const method = p.method || 'cash';
     acc[method] = (acc[method] || 0) + p.amount;
     return acc;
   }, {});
 
-  // --- Combined Transactions List ---
+  
   const transactions = [
     ...data.payments.map(p => {
         const student = students.find(s => s.id === p.studentId);
@@ -60,7 +68,6 @@ export default function StatsPage() {
             id: p.id,
             date: pDate,
             title: student ? student.name : 'תשלום מתלמיד',
-            // Here is the "How": method displayed clearly
             subtitle: p.method || 'מזומן', 
             amount: p.amount,
             type: 'payment',
@@ -83,19 +90,25 @@ export default function StatsPage() {
     })
   ].sort((a, b) => b.date - a.date);
 
-  const monthName = date.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' });
+  
+  const rangeStart = new Date(date.getFullYear(), date.getMonth(), 10);
+  const rangeEnd = new Date(date.getFullYear(), date.getMonth() + 1, 10);
+  const displayRange = `${rangeStart.getDate()}/${rangeStart.getMonth()+1} - ${rangeEnd.getDate()}/${rangeEnd.getMonth()+1}`;
 
   return (
     <div className="space-y-6 animate-in fade-in pb-20">
       
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700">
         <button onClick={() => moveMonth(-1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full dark:text-slate-200"><ChevronRight/></button>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">{monthName}</h2>
+        <div className="text-center">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">{date.toLocaleDateString('he-IL', { month: 'long', year: 'numeric' })}</h2>
+            <p className="text-xs text-slate-400 font-bold" dir="ltr">{displayRange}</p>
+        </div>
         <button onClick={() => moveMonth(1)} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-full dark:text-slate-200"><ChevronLeft/></button>
       </div>
 
-      {/* Main Card */}
+      {}
       <div className="bg-gray-900 dark:bg-slate-950 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden">
         <div className="relative z-10">
           <p className="text-gray-400 text-sm mb-1">סה"כ הכנסות (תזרים בפועל)</p>
@@ -112,7 +125,7 @@ export default function StatsPage() {
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 opacity-20"></div>
       </div>
 
-      {/* Payment Sources Breakdown */}
+      {}
       <div className="bg-white dark:bg-slate-800 p-5 rounded-3xl border border-gray-100 dark:border-slate-700 shadow-sm">
          <h4 className="font-bold text-gray-700 dark:text-slate-200 mb-4 flex items-center gap-2">
            <Wallet size={18} className="text-green-500"/> מקורות הכסף
@@ -126,9 +139,9 @@ export default function StatsPage() {
          </div>
       </div>
 
-      {/* Transactions List */}
+      {}
       <div>
-        <h4 className="font-bold text-gray-700 dark:text-slate-300 mb-3 text-sm px-2">פירוט הכנסות החודש</h4>
+        <h4 className="font-bold text-gray-700 dark:text-slate-300 mb-3 text-sm px-2">פירוט הכנסות החודש ({displayRange})</h4>
         <div className="space-y-3">
             {transactions.length === 0 ? (
                 <div className="text-center py-8 text-gray-400 text-sm bg-white dark:bg-slate-800 rounded-2xl border border-dashed border-gray-200 dark:border-slate-700">
@@ -136,7 +149,7 @@ export default function StatsPage() {
                 </div>
             ) : (
                 transactions.map((item) => (
-                    <div key={item.id} className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-gray-100 dark:border-slate-700/50 flex items-center justify-between shadow-sm">
+                  <div key={item.id} className="bg-white dark:bg-slate-800 p-3 rounded-2xl border border-gray-100 dark:border-slate-700/50 flex items-center justify-between shadow-sm">
                         <div className="flex items-center gap-3">
                             <div className={`p-3 rounded-full ${item.color}`}>
                                 <item.icon size={18} />
@@ -144,10 +157,10 @@ export default function StatsPage() {
                             <div>
                                 <p className="font-bold text-gray-800 dark:text-gray-100 text-sm">{item.title}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
-                                    {/* Date */}
+                                    {}
                                     <span>{item.date.toLocaleDateString('he-IL', {day: 'numeric', month: 'numeric'})}</span>
                                     <span className="opacity-40">|</span>
-                                    {/* Method (Bit/Cash/etc) */}
+                                    {}
                                     <span className="font-medium bg-gray-100 dark:bg-slate-700 px-1.5 py-0.5 rounded capitalize">
                                       {item.subtitle}
                                     </span>
@@ -157,7 +170,7 @@ export default function StatsPage() {
                         <div className="text-left">
                             <span className="font-bold text-gray-800 dark:text-white block">+₪{item.amount.toLocaleString()}</span>
                         </div>
-                    </div>
+                  </div>
                 ))
             )}
         </div>
@@ -170,7 +183,6 @@ export default function StatsPage() {
 function MethodBar({ label, amount, total, color }) {
   const percent = total > 0 ? (amount / total) * 100 : 0;
   if (amount === 0) return null;
-  
   return (
     <div>
       <div className="flex justify-between text-xs mb-1">

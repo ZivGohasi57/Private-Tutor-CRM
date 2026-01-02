@@ -23,7 +23,7 @@ export default function LoginPage() {
       } else {
         await signInWithEmailAndPassword(auth, email, password);
       }
-      // Auth listener in App.js handles the redirect
+      
     } catch (err) {
       setError('שגיאה בהתחברות: ' + err.message);
     } finally {

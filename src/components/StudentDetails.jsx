@@ -27,7 +27,7 @@ export function StudentDetails({ student, onClose, onEditLesson }) {
     } else {
       await deletePayment(item.id);
     }
-    await loadData(); // Reload to reflect changes
+    await loadData(); 
   };
 
   return (

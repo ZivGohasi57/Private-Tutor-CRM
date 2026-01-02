@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base styles & Dark mode support */
 body {
   @apply bg-slate-50 text-slate-900 transition-colors duration-300;
 }
@@ -13,7 +12,6 @@ body {
   }
 }
 
-/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;

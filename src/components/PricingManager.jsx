@@ -6,7 +6,7 @@ const DEFAULT_RATES = {
   middle_school: 140,
   high_school: 160,
   academic: 200,
-  academic_extra: 150 // New field for the "after first hour" logic
+  academic_extra: 150 
 };
 
 export const PricingManager = ({ onClose, onUpdate }) => {
@@ -31,10 +31,10 @@ export const PricingManager = ({ onClose, onUpdate }) => {
     setLoading(true);
     localStorage.setItem('user_rates', JSON.stringify(rates));
     
-    // Simulate API delay
+    
     setTimeout(() => {
       setLoading(false);
-      if (onUpdate) onUpdate(rates); // Pass updated rates back
+      if (onUpdate) onUpdate(rates); 
       onClose();
     }, 500);
   };
@@ -58,7 +58,7 @@ export const PricingManager = ({ onClose, onUpdate }) => {
 
         <div className="p-4 space-y-4 overflow-y-auto">
           
-          {/* Elementary */}
+          {}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">Elementary</label>
             <div className="relative">
@@ -67,7 +67,7 @@ export const PricingManager = ({ onClose, onUpdate }) => {
             </div>
           </div>
 
-          {/* Middle School */}
+          {}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">Middle School</label>
             <div className="relative">
@@ -76,7 +76,7 @@ export const PricingManager = ({ onClose, onUpdate }) => {
             </div>
           </div>
 
-          {/* High School */}
+          {}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-1">High School</label>
             <div className="relative">
@@ -87,7 +87,7 @@ export const PricingManager = ({ onClose, onUpdate }) => {
 
           <div className="h-px bg-gray-100 my-2"></div>
 
-          {/* Academic Logic */}
+          {}
           <div className="bg-blue-50 p-3 rounded-xl space-y-3">
             <p className="text-xs font-bold text-blue-800 uppercase tracking-wide">Academic Pricing</p>
             

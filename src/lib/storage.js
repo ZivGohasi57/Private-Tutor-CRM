@@ -30,7 +30,7 @@ const convertDates = (doc) => {
   };
 };
 
-// --- Students ---
+
 
 export const listenToStudents = (callback) => {
   try {
@@ -65,7 +65,7 @@ export const saveStudent = async (student) => {
 
 export const deleteStudent = async (id) => await deleteDoc(doc(db, COLL.STUDENTS, id));
 
-// --- Lessons & Schedule ---
+
 
 export const listenToSchedule = (callback) => {
   try {
@@ -88,11 +88,9 @@ export const getAllSchedule = async () => {
 };
 
 export const checkConflict = async (newStart, newEnd, excludeId = null) => {
-  const allLessons = await getAllSchedule(); 
-  
+  const allLessons = await getAllSchedule();
   const startMs = new Date(newStart).getTime();
   const endMs = new Date(newEnd).getTime();
-
   return allLessons.find(l => {
     if (excludeId && l.id === excludeId) return false;
     const lStart = l.start.getTime();
@@ -119,7 +117,6 @@ export const saveBulkLessons = async (lessons) => {
     studentIdToUpdate = lesson.studentId;
   }
   await batch.commit();
-  
   if (studentIdToUpdate) {
       await recalculateStudentBalance(studentIdToUpdate);
   }
@@ -140,7 +137,7 @@ export const deleteLesson = async (id) => {
     }
 };
 
-// --- Payments & Finance ---
+
 
 export const savePayment = async (payment) => {
   const uid = getUid();
@@ -159,40 +156,6 @@ export const deletePayment = async (id) => {
     }
 };
 
-export const getMonthlyStats = async () => {
-  const uid = getUid();
-  const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  try {
-    const qPayments = query(collection(db, COLL.PAYMENTS), where('userId', '==', uid));
-    const snapPayments = await getDocs(qPayments);
-    
-    const totalPayments = snapPayments.docs.reduce((sum, doc) => {
-      const data = doc.data();
-      const pDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
-      if (pDate >= firstDay) return sum + Number(data.amount);
-      return sum;
-    }, 0);
-
-    const qGradings = query(collection(db, COLL.GRADINGS), where('userId', '==', uid));
-    const snapGradings = await getDocs(qGradings);
-
-    const totalGradings = snapGradings.docs.reduce((sum, doc) => {
-      const data = doc.data();
-      const gDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
-      if (gDate >= firstDay) return sum + Number(data.totalPrice);
-      return sum;
-    }, 0);
-
-    return { total: totalPayments + totalGradings };
-
-  } catch (e) {
-    console.error("Error getting monthly stats:", e);
-    return { total: 0 };
-  }
-};
-
 export const getFutureIncome = async () => {
   const now = new Date();
   const allSchedule = await getAllSchedule(); 
@@ -201,10 +164,13 @@ export const getFutureIncome = async () => {
     .reduce((sum, l) => sum + Number(l.price), 0);
 };
 
+
 export const getMonthlyReport = async (month, year) => {
   const uid = getUid();
-  const startDate = new Date(year, month, 1, 0, 0, 0);
-  const endDate = new Date(year, month + 1, 1, 0, 0, 0);
+  
+  
+  const startDate = new Date(year, month, 10, 0, 0, 0);
+  const endDate = new Date(year, month + 1, 10, 0, 0, 0);
 
   const [paymentsSnap, scheduleSnap, gradingsSnap] = await Promise.all([
     getDocs(query(collection(db, COLL.PAYMENTS), where('userId', '==', uid))),
@@ -235,7 +201,31 @@ export const getMonthlyReport = async (month, year) => {
   return { payments, lessons, gradings };
 };
 
-// --- Gradings & Courses ---
+
+export const getMonthlyStats = async () => {
+  try {
+    const now = new Date();
+    
+    
+    
+    if (now.getDate() < 10) {
+        now.setMonth(now.getMonth() - 1);
+    }
+
+    const report = await getMonthlyReport(now.getMonth(), now.getFullYear());
+
+    const totalPayments = report.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalGradings = report.gradings.reduce((sum, g) => sum + Number(g.totalPrice), 0);
+
+    return { total: totalPayments + totalGradings };
+
+  } catch (e) {
+    console.error("Error getting monthly stats:", e);
+    return { total: 0 };
+  }
+};
+
+
 
 export const listenToGradings = (callback) => {
     try {
@@ -278,11 +268,9 @@ export const getCourses = async () => {
     const uid = getUid();
     const q = query(collection(db, COLL.COURSES), where('userId', '==', uid));
     const snapshot = await getDocs(q);
-    
     return snapshot.docs
       .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a, b) => a.name.localeCompare(b.name)); 
-      
+      .sort((a, b) => a.name.localeCompare(b.name));
   } catch(e) { 
     console.error("Error fetching courses:", e); 
     return []; 
@@ -296,24 +284,26 @@ export const saveCourse = async (course) => {
 
 export const deleteCourse = async (id) => await deleteDoc(doc(db, COLL.COURSES, id));
 
-// --- History & Balance Sync ---
+
 
 export const getStudentHistory = async (studentId) => {
     await recalculateStudentBalance(studentId);
-
     try {
         const [allLessons, allPayments] = await Promise.all([
             getAllSchedule(),
             getPaymentsForStudent(studentId)
         ]);
+
         const lessons = allLessons
             .filter(l => l.studentId === studentId && l.type !== 'block')
             .map(l => ({ ...l, dataType: 'lesson' }));
+
         const payments = allPayments.map(p => ({
             ...p,
             dataType: 'payment',
             start: p.date?.toDate ? p.date.toDate() : new Date(p.date)
         }));
+
         return [...lessons, ...payments].sort((a, b) => b.start - a.start);
     } catch (error) {
         console.error("Error fetching history:", error);
@@ -342,7 +332,7 @@ export const recalculateStudentBalance = async (studentId) => {
             l.type !== 'block' &&
             l.start < now 
         );
-        
+
         const totalDebt = pastLessons.reduce((sum, l) => sum + Number(l.price), 0);
         const newBalance = totalPaid - totalDebt;
 
@@ -350,7 +340,6 @@ export const recalculateStudentBalance = async (studentId) => {
         await updateDoc(studentRef, { balance: newBalance });
         
         return newBalance;
-
     } catch (e) {
         console.error("Error recalculating balance:", e);
     }
@@ -387,7 +376,6 @@ export const migrateOldData = async () => {
 
     alert(`תהליך הסתיים בהצלחה! שוחזרו ${totalUpdated} פריטים. הדף יתרענן כעת.`);
     window.location.reload();
-    
   } catch (e) {
     console.error(e);
     alert('אירעה שגיאה בתהליך השחזור: ' + e.message);
